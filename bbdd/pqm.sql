@@ -1,0 +1,6 @@
+
+
+CREATE SCHEMA IF NOT EXISTS `test_db` DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_general_ci;
+
+
+USE `test_db`;

@@ -1,0 +1,48 @@
+version: '3'
+networks:
+  net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: ${IP}.0/24
+services:
+  mysql:
+    image: mysql:5.7
+    container_name: ${NAME:-project}_mysql
+    restart: always
+    ports:
+      - ${MYSQL_PORT:-3306}:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${NAME:-project}
+    volumes:
+      - ./config/bbdd/mysqld.cnf:/etc/mysql/conf.d/mysqld.cnf
+      - ./bbdd/:/docker-entrypoint-initdb.d
+    networks:
+      net:
+        ipv4_address: ${IP}.2
+  app:
+    image: ${NAME:-project}/app
+    container_name: ${NAME:-project}_app
+    build: ./images/app/
+    hostname: app.${NAME:-project}.loc
+    links:
+      - mysql
+    ports:
+      - ${APP_PORT:-8080}:80
+    environment:
+      - VIRTUAL_HOST=${VIRTUAL_HOST}
+    volumes:
+      - ${APP_PATH}:/var/www/html/
+    networks:
+      net:
+        ipv4_address: ${IP}.3
+  mail:
+    image: mailhog/mailhog:latest
+    container_name: ${NAME:-project}_mail
+    ports:
+      - 1025:1025
+      - 8025:8025
+    networks:
+      net:
+        ipv4_address: ${IP}.4
